@@ -2,23 +2,25 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import * as Speech from 'expo-speech';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 
 
 export default function Index() {
-  const [weather, setWeather] = useState<any>(null);
-  const [latitude, setLatitude] = useState('40.0379');
-  const [longitude, setLongitude] = useState('-75.3433'); 
-  const [location, setLocation] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [cityWeatherList, setCityWeatherList] = useState<any[]>([]);
 
   const additionalCities = [
-    { name: "New York", latitude: 40.7128, longitude: -74.0060 },
-    { name: "Los Angeles", latitude: 34.0522, longitude: -118.2437 },
-    { name: "Chicago", latitude: 41.8781, longitude: -87.6298 },
-    // Add more cities as desired
+    { name: 'New York', latitude: 40.7128, longitude: -74.0060 },
+    { name: 'Los Angeles', latitude: 34.0522, longitude: -118.2437 },
+    { name: 'Chicago', latitude: 41.8781, longitude: -87.6298 },
+    { name: 'Houston', latitude: 29.7604, longitude: -95.3698 },
+    { name: 'Phoenix', latitude: 33.4484, longitude: -112.0740 },
+    { name: 'Philadelphia', latitude: 39.9526, longitude: -75.1652 },
+    { name: 'San Antonio', latitude: 29.4241, longitude: -98.4936 },
+    { name: 'San Diego', latitude: 32.7157, longitude: -117.1611 },
+    { name: 'Dallas', latitude: 32.7767, longitude: -96.7970 },
+    { name: 'San Jose', latitude: 37.3382, longitude: -121.8863 },
   ];
 
   useEffect(() => {
@@ -30,15 +32,12 @@ export default function Index() {
       }
       const currentLocation = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = currentLocation.coords;
-  
-      setLocation({ latitude, longitude });
+
   
       // Add "Your Location" to the list
       await fetchWeather(latitude, longitude, 'Your Location');
     };
   
-    // prevent duplicates on re-mount/hot reload
-    setCityWeatherList([]);
   
     getLocationAndFetchWeather();
   
@@ -94,58 +93,82 @@ export default function Index() {
    
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Weather in Your Location and Other Cities:</Text>
+    <View style={styles.container}>
+      <Text style={styles.header}>Weather in Your Location and Other Cities:</Text>
   
       {errorMsg ? (
-        <Text>{errorMsg}</Text>
+        <Text style={styles.errorText}>{errorMsg}</Text>
       ) : (
-        <FlatList 
-            data={cityWeatherList}
-            keyExtractor={(item) => item.name}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() =>
-                  router.push({
-                    pathname: '/CityDetail',
-                    params: { cityData: JSON.stringify(item) },
-                  })
-                }
-                style={{ padding: 10, alignItems: 'center' }}
-              >
-                <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{item.name}</Text>
-                <Text>Temperature: {item.temp}</Text>
-                <Text>Conditions: {item.description}</Text>
-                <Image
-                  style={{ width: 50, height: 50 }}
-                  source={{ uri: `https://openweathermap.org/img/wn/${item.icon}.png` }}
-                />
-            
-                <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
-                  <TouchableOpacity
-                    onPress={(e) => {
-                      e.stopPropagation();        // prevent navigation
-                      speakWeather(item);
-                    }}
-                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#4CAF50' }}
-                  >
-                    <Text style={{ color: 'white' }}>🔊 Speak</Text>
-                  </TouchableOpacity>
-            
-                  <TouchableOpacity
-                    onPress={(e) => {
-                      e.stopPropagation();        // prevent navigation
-                      stopSpeaking();
-                    }}
-                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#777' }}
-                  >
-                    <Text style={{ color: 'white' }}>⏹ Stop</Text>
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-        )}
-      </View>
-    );
+        <FlatList
+          data={cityWeatherList}
+          keyExtractor={(item) => item.name}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: '/CityDetail',
+                  params: { cityData: JSON.stringify(item) },
+                })
+              }
+              style={styles.card}
+            >
+              <Text style={styles.cityName}>{item.name}</Text>
+              <Text style={styles.tempText}>Temperature: {item.temp}</Text>
+              <Text style={styles.descText}>Conditions: {item.description}</Text>
+  
+              <Image
+                style={styles.icon}
+                source={{ uri: `https://openweathermap.org/img/wn/${item.icon}.png` }}
+              />
+  
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    speakWeather(item);
+                  }}
+                  style={[styles.button, styles.speakButton]}
+                >
+                  <Text style={styles.buttonText}>🔊 Speak</Text>
+                </TouchableOpacity>
+  
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    stopSpeaking();
+                  }}
+                  style={[styles.button, styles.stopButton]}
+                >
+                  <Text style={styles.buttonText}>⏹ Stop</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+    </View>
+  );
 }
+    
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header: { fontSize: 18, fontWeight: '600', marginBottom: 10 },
+  errorText: { color: 'red', marginBottom: 10 },
+  card: {
+    padding: 10,
+    alignItems: 'center',
+    marginVertical: 6,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 10,
+    width: '90%',
+  },
+  cityName: { fontWeight: 'bold', fontSize: 18 },
+  tempText: { fontSize: 16 },
+  descText: { fontSize: 16 },
+  icon: { width: 50, height: 50, marginVertical: 6 },
+  buttonRow: { flexDirection: 'row', marginTop: 8, gap: 12 },
+  button: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  speakButton: { backgroundColor: '#4CAF50' },
+  stopButton: { backgroundColor: '#777' },
+  buttonText: { color: 'white' },
+});

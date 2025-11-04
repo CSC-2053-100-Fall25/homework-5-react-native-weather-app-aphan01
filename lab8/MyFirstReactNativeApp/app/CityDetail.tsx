@@ -13,9 +13,11 @@ export default function CityDetail() {
             <Text style={styles.cityName}>{parsedCityData.name}</Text>
             <Text>Temperature: {parsedCityData.temp}</Text>
             <Text>Conditions: {parsedCityData.description}</Text>
+            <Text >Humidity: {parsedCityData.humidity}</Text>
+            <Text >Wind Speed: {parsedCityData.windSpeed}</Text>
             <Image
                 style={{ width: 100, height: 100 }}
-                source={{ uri:
+                source={{ uri:  
                 `https://openweathermap.org/img/wn/${parsedCityData.icon}.png` }}
             />
         </View>
@@ -24,5 +26,8 @@ export default function CityDetail() {
 const styles = StyleSheet.create({
     detailContainer: { flex: 1, justifyContent: 'center', alignItems: 'center',
 padding: 20 },
-    cityName: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
+    backText: { fontSize: 16, fontWeight: '600' },
+    cityName: { fontSize: 26, fontWeight: 'bold', marginBottom: 10 },
+    info: { fontSize: 18, marginTop: 5 },
+    icon: { width: 100, height: 100, marginVertical: 10 },
 });
